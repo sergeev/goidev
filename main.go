@@ -26,6 +26,8 @@ func main() {
 	// Главная страница проекта
 	router.HandleFunc("/", Logger(common.WelcomePageHandler)) // GET
 
+	router.HandleFunc("/contacts", Logger(common.ContactsPageHandler)) // GET
+
 	//router.HandleFunc("/", Logger(common.LoginPageHandler)) // GET
 
 	router.HandleFunc("/index", Logger(common.IndexPageHandler)) // GET

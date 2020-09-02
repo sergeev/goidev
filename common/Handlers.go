@@ -84,7 +84,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 // for GET
 // Главная страница проекта
 func WelcomePageHandler(response http.ResponseWriter, request *http.Request) {
-	var body, _ = helpers.LoadFile("tpl/welcome.gohtml")
+	var body, _ = helpers.LoadFile("tpl/itcube/welcome.gohtml")
+	fmt.Fprintf(response, body)
+}
+
+// Контакты
+func ContactsPageHandler(response http.ResponseWriter, request *http.Request) {
+	var body, _ = helpers.LoadFile("tpl/itcube/contacts.gohtml")
 	fmt.Fprintf(response, body)
 }
 

@@ -1,5 +1,5 @@
 # :sparkles: **goidev** :sparkles:
-iDev global service for to find true developers!
+iDev website for ITCube142 Novokuznetsk 
 
 # Install
 - [x] go get -v -u github.com/gorilla/mux
