@@ -23,7 +23,10 @@ func main() {
 	// Загрузка стилей проекта
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
 
-	router.HandleFunc("/", Logger(common.LoginPageHandler)) // GET
+	// Главная страница проекта
+	router.HandleFunc("/", Logger(common.WelcomePageHandler)) // GET
+
+	//router.HandleFunc("/", Logger(common.LoginPageHandler)) // GET
 
 	router.HandleFunc("/index", Logger(common.IndexPageHandler)) // GET
 	router.HandleFunc("/login", Logger(common.LoginHandler)).Methods("POST")

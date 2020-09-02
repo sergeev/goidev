@@ -82,6 +82,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // for GET
+// Главная страница проекта
+func WelcomePageHandler(response http.ResponseWriter, request *http.Request) {
+	var body, _ = helpers.LoadFile("tpl/welcome.gohtml")
+	fmt.Fprintf(response, body)
+}
+
+// for GET
 func IndexPageHandler(response http.ResponseWriter, request *http.Request) {
 	// Проверка пользователя в базе
 	userName := GetUserName(request)
