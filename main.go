@@ -1,11 +1,16 @@
 package main
 
 import (
-	common "./common"
-	"github.com/gorilla/mux"
+	"database/sql"
 	"log"
 	"net/http"
+
+	common "./common"
+	"github.com/gorilla/mux"
 )
+
+var db *sql.DB
+var err error
 
 var router = mux.NewRouter()
 
@@ -18,8 +23,18 @@ func Logger(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-
 func main() {
+	// Подключение к базе данных
+	db, err = sql.Open("mysql", "root:root@tcp(localhost:8889)/golang_auth")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err.Error())
+	}
 	// Загрузка стилей проекта
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
 
@@ -31,10 +46,11 @@ func main() {
 	//router.HandleFunc("/", Logger(common.LoginPageHandler)) // GET
 
 	router.HandleFunc("/index", Logger(common.IndexPageHandler)) // GET
-	router.HandleFunc("/login", Logger(common.LoginHandler)).Methods("POST")
+	router.HandleFunc("/login", Logger(common.LoginPage)).Methods("POST")
 
-	router.HandleFunc("/register", Logger(common.RegisterPageHandler)).Methods("GET")
-	router.HandleFunc("/register", Logger(common.RegisterHandler)).Methods("POST")
+	//router.HandleFunc("/register", Logger(common.RegisterPageHandler)).Methods("GET")
+	router.HandleFunc("/register", Logger(common.SignupPage)).Methods("GET")
+	router.HandleFunc("/register", Logger(common.SignupPage)).Methods("POST")
 
 	router.HandleFunc("/logout", Logger(common.LogoutHandler)).Methods("POST")
 
@@ -44,4 +60,5 @@ func main() {
 	http.Handle("/", router)
 	log.Print("Server: start")
 	http.ListenAndServe(":8080", nil)
+
 }

@@ -1,13 +1,20 @@
 package common
 
 import (
+	"database/sql"
 	"fmt"
-	"github.com/gorilla/securecookie"
 	"log"
 	"net/http"
+
 	"../helpers"
 	"../storage"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/securecookie"
+	"golang.org/x/crypto/bcrypt"
 )
+
+var db *sql.DB
+var err error
 
 var cookieHandler = securecookie.New(
 	securecookie.GenerateRandomKey(64),
@@ -162,4 +169,71 @@ func GetUserName(request *http.Request) (userName string) {
 		}
 	}
 	return userName
+}
+
+// Авторизация на mysql dbo
+func SignupPage(res http.ResponseWriter, req *http.Request) {
+	if req.Method != "POST" {
+		http.ServeFile(res, req, "tpl/auth/signup.html")
+		return
+	}
+
+	username := req.FormValue("username")
+	password := req.FormValue("password")
+
+	var user string
+
+	err := db.QueryRow("SELECT username FROM users WHERE username=?", username).Scan(&user)
+
+	switch {
+	case err == sql.ErrNoRows:
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			http.Error(res, "Server error, unable to create your account.", 500)
+			return
+		}
+
+		_, err = db.Exec("INSERT INTO users(username, password) VALUES(?, ?)", username, hashedPassword)
+		if err != nil {
+			http.Error(res, "Server error, unable to create your account.", 500)
+			return
+		}
+
+		res.Write([]byte("User created!"))
+		return
+	case err != nil:
+		http.Error(res, "Server error, unable to create your account.", 500)
+		return
+	default:
+		http.Redirect(res, req, "/", 301)
+	}
+}
+
+func LoginPage(res http.ResponseWriter, req *http.Request) {
+	if req.Method != "POST" {
+		http.ServeFile(res, req, "tpl/auth/login.html")
+		return
+	}
+
+	username := req.FormValue("username")
+	password := req.FormValue("password")
+
+	var databaseUsername string
+	var databasePassword string
+
+	err := db.QueryRow("SELECT username, password FROM users WHERE username=?", username).Scan(&databaseUsername, &databasePassword)
+
+	if err != nil {
+		http.Redirect(res, req, "/login", 301)
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(databasePassword), []byte(password))
+	if err != nil {
+		http.Redirect(res, req, "/login", 301)
+		return
+	}
+
+	res.Write([]byte("Hello" + databaseUsername))
+
 }
